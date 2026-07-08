@@ -1,0 +1,34 @@
+# --- Credentials (never commit these) ---
+kaggle.json
+*.pem
+*.key
+.env
+
+# --- Python ---
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+env/
+.venv/
+
+# --- Model files (too large for GitHub / hosted on Drive) ---
+*.h5
+*.keras
+models/*.h5
+models/*.keras
+
+# --- Dataset (downloaded via Kaggle API, not committed) ---
+data/
+dataset/
+PlantVillage/
+train/
+val/
+test/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Colab / Jupyter ---
+*.ipynb_checkpoints
