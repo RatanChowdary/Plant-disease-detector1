@@ -1,79 +1,61 @@
 # Plant Disease Detector
 
-A deep learning model that classifies plant leaf diseases from images, with Grad-CAM
-visualization to show which regions of the leaf drove the prediction, wrapped in a
-Gradio app for interactive use.
+I made this for my village farmers(including my father) who lose crops every year to disease this helps them via their phone through a whatsapp bot which replies in telugu 
+NOTE: Here only plant disease detector model is present and everything is related to plant disease detector only
 
-## Project Structure
+## So What it does
 
-```
-plant-disease-detector/
-├── README.md
-├── .gitignore
-├── requirements.txt
-├── DEBUGGING_LOG.md
-├── notebooks/
-│   └── plant_disease_detector.ipynb   # final, self-written notebook
-├── early-attempts/
-│   ├── 01_data_leakage_early_attempt.ipynb
-│   └── 02_gradcam_early_attempt.ipynb
-├── app/
-│   └── gradio_app.py
-└── assets/
-    ├── training_history.png
-    └── gradcam_samples/
-```
+- predicts the plant disease from a photo of a leaf (38 classes)
+- gives the treatment
+- shows the disease name + treatment in Telugu
+- draws a Grad-CAM heatmap so you can see where the model looked
+
+## How it works
+
+- model: EfficientNetV2B0, pretrained on ImageNet (transfer learning)
+- trained in 2 phases: frozen base first, then fine-tuned the top layers at a small learning rate (1e-5)
+- built in Google Colab with TensorFlow / Keras
+- app made with Gradio
 
 ## Dataset
 
-PlantVillage dataset, downloaded via the Kaggle API. Not committed to this repo —
-see `notebooks/plant_disease_detector.ipynb` for the download and `split-folders`
-setup steps.
+- PlantVillage (Kaggle), ~54k images, 38 classes
+- split 70/15/15 train/val/test
 
-## Model
+## Results
 
-- Backbone: `EfficientNetV2B0` (`include_preprocessing=True`, no manual `preprocess_input`)
-- Training: Phase 1 (10 epochs, frozen base) → Fine-tuning (5 epochs, unfrozen), EarlyStopping enabled
-- Final train/val split done once, correctly, before any preprocessing (see DEBUGGING_LOG.md
-  for why this matters)
+- 98% on the test set
+- but only ~4 out of 9 correct on my own real-world photos (will do more testing in version 2 becuase there is a flaw in data set not the model)
+- So basically in the plant village dataset there are multilple images of the same leafs shot with different angles and duplicated images of the same leaf and i split the dataset at random into 70/15/15 and there is a chance that some images of the same leaf but are differnet images were in the both test and train folders which caused the inflated 98 percent accuracy (i got to know about this when i researched about the huge difference in my accuracy in real world images and test folder)
 
-Results: _fill in after final training run — accuracy, loss, training curves in `assets/`_
+## Limitations
 
-## Grad-CAM
+- it overdiagnoses healthy plants because the healthy training images are clean single lab leaves so a real healthy plant (messy background,whole plant, normal lighting) doesnt match what it learned as an healthyplant and since it has to pick one of the 38 classes it ends up guessing a disease
+- it only knows the 38 classes it was trained on.it just picks a random disease closest to the 38 classes even if the real one is not there
+- it has no rice diseases  which is the main crop in my region(will add in v2)
+- Grad-CAM is low-res (7x7) so it shows the main area, not every spot
 
-Visualizes which parts of the leaf the model used to make its prediction, using a
-Grad-CAM implementation that automatically locates the last conv layer in
-EfficientNetV2B0. Sample outputs in `assets/gradcam_samples/`.
+## What I might add next
 
-## App
+- rice disease classes
+- fine-tune on real field photos (PlantDoc)
+- a WhatsApp bot so farmers can just send a photo
 
-A Gradio interface wraps the trained model + Grad-CAM overlay for interactive testing.
-Run with:
+## How to run
 
-```
-python app/gradio_app.py
-```
+- just open the notebook in Colab (GPU for training)
+- it needs a kaggle.json key in Drive to download the dataset
+- and run top to bottom; the last cells launch the app
 
-## Learning Journey
+## Tech Stack
 
-This project went through a few iterations before the final version. Early on I
-worked with AI assistance while learning TensorFlow/Keras and ran into two real bugs:
-
-1. **Data leakage** — an early version scored 98%+ accuracy, which turned out to be
-   because of two inconsistent train/test splits rather than one clean split.
-2. **Grad-CAM gradient errors** — an early implementation threw `gradients are None`
-   because the feature map and prediction weren't in the same gradient path.
-
-Those early, AI-assisted attempts are kept in `early-attempts/` rather than deleted,
-with notes on what went wrong. The final notebook in `notebooks/` was rewritten by me
-from scratch once I understood both issues, without relying on AI to write the fix.
-See `DEBUGGING_LOG.md` for the full writeup.
-
-## Setup
-
-```
-pip install -r requirements.txt
-```
-
-Kaggle credentials (`kaggle.json`) are kept locally / in Google Drive and are never
-committed — see `.gitignore`.
+- **Language:** Python
+- **Deep learning:** TensorFlow / Keras
+- **Model:** EfficientNetV2B0 (transfer learning + fine-tuning)
+- **Explainability:** Grad-CAM
+- **App / UI:** Gradio
+- **Image processing:** OpenCV,Pillow
+- **Data:** NumPy,Pandas,split-folders
+- **Plots / metrics:** Matplotlib,Seaborn,scikit-learn
+- **Environment:** Google Colab
+- **Dataset:** PlantVillage from (Kaggle)
